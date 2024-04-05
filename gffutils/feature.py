@@ -283,6 +283,15 @@ class Feature(object):
             sort_attribute_values=self.sort_attribute_values,
         )
 
+        ##Remove quotes around value of Target attribute. GFF3 spec has no quotes.
+        ## https://github.com/The-Sequence-Ontology/Specifications/blob/master/gff3.md#:~:text=23%20.%20.%20.%20ID%3DMatch1-,%3BTarget%3D,-EST23%201%2021
+        find_str = ';Target="'
+        if find_str in reconstructed_attributes:
+            target_start = reconstructed_attributes.find(';Target="')
+            target_end = reconstructed_attributes.find('"', target_start+len(find_str))
+            ## Yes, the below is horrendous. It is meant as an explanatory example, not necesarrily "best practice" of how to fix this issue.
+            reconstructed_attributes = reconstructed_attributes[:target_start+len(find_str)-1] + reconstructed_attributes[target_start+len(find_str):target_end] + reconstructed_attributes[target_end+1:] 
+        
         # Final line includes reconstructed as well as any previously-added
         # "extra" fields
         items.append(reconstructed_attributes)
