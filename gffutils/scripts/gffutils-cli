@@ -76,11 +76,11 @@ def fetch(db, ids):
      (like grep -v)''')
 @arg('--exclude-self', help='''Use this to suppress reporting the IDs you've
      provided.''')
-@arg('--invert', help='''Return children that do not match the provided IDs''', action='store_true')
+@arg('--invert', help='''Return features that are not and do not descend from the provided IDs''', action='store_true')
 def children(db, ids, limit=None, exclude=None, exclude_self=False, invert=False):
     """
     Fetch children from the database according to ID.
-    If --invert is used, fetch children that do not match the provided IDs.
+    If --invert is used, fetch features that are not and do not descend from the provided IDs.
     """
     db = gffutils.FeatureDB(db)
     ids, limit, exclude = handle_relations_args(ids, limit, exclude)
@@ -92,6 +92,7 @@ def children(db, ids, limit=None, exclude=None, exclude_self=False, invert=False
         children_of_target_features = set()
         for feature in target_features:
             children_of_target_features.update(db.children(feature))
+
         for f in all_features - target_features.union(children_of_target_features):
             if f.featuretype in exclude:
                 continue
