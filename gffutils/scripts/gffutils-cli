@@ -88,7 +88,7 @@ def children(db, ids, limit=None, exclude=None, exclude_self=False, invert=False
     if invert:
         # Get all features that are not in the provided ids
         all_features = set(db.all_features())
-        target_features = set(db[i] for i in ids)
+        target_features = {feature for feature in all_features if feature.id in ids}
         children_of_target_features = set()
         for feature in target_features:
             children_of_target_features.update(db.children(feature))
