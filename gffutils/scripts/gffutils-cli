@@ -89,7 +89,8 @@ def children(db, ids, limit=None, exclude=None, exclude_self=False, invert=False
         # Get all features that are not in the provided ids
         all_features = set(db.all_features())
         target_features = set(db[i] for i in ids)
-        for f in all_features - target_features:
+        children_of_target_features = set(db.children(i) for i in target_features)
+        for f in all_features - ((target_features + children_of_target_features)):
             if f.featuretype in exclude:
                 continue
             yield f
