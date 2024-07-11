@@ -76,28 +76,42 @@ def fetch(db, ids):
      (like grep -v)''')
 @arg('--exclude-self', help='''Use this to suppress reporting the IDs you've
      provided.''')
-def children(db, ids, limit=None, exclude=None, exclude_self=False):
+@arg('--invert', help='''Return children that do not match the provided IDs''', action='store_true')
+def children(db, ids, limit=None, exclude=None, exclude_self=False, invert=False):
     """
     Fetch children from the database according to ID.
+    If --invert is used, fetch children that do not match the provided IDs.
     """
     db = gffutils.FeatureDB(db)
     ids, limit, exclude = handle_relations_args(ids, limit, exclude)
 
-    for i in ids:
-        f = db[i]
-        if f.featuretype in exclude:
-            continue
-        if not exclude_self:
-            yield f
-        for child1 in db.children(i):
-            if child1.featuretype in exclude:
+    if invert:
+        # Get all features that are not in the provided ids
+        all_features = set(db.all_features())
+        target_features = set(db[i] for i in ids)
+        for f in all_features - target_features:
+            if f.featuretype in exclude:
                 continue
-            yield child1
-            for child2 in db.children(child1):
-                if child2.featuretype in exclude:
+            yield f
+            for child in db.children(f):
+                if child.featuretype in exclude:
                     continue
-                yield child2
-
+                yield child
+    else:
+        for i in ids:
+            f = db[i]
+            if f.featuretype in exclude:
+                continue
+            if not exclude_self:
+                yield f
+            for child1 in db.children(i):
+                if child1.featuretype in exclude:
+                    continue
+                yield child1
+                for child2 in db.children(child1):
+                    if child2.featuretype in exclude:
+                        continue
+                    yield child2
 
 # parents subcommand ----------------------------------------------------------
 @arg('db', help=db_help)
